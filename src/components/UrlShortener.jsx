@@ -4,9 +4,11 @@ const UrlShortener = () => {
   const [originalUrl, setOriginalUrl] = useState('');
   const [shortUrl, setShortUrl] = useState('');
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setCopied(false);
     try {
       const response = await fetch('http://localhost:3000/shorten', {
         method: 'POST',
@@ -26,6 +28,17 @@ const UrlShortener = () => {
     }
   };
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(shortUrl)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy:', err);
+      });
+  };
+
   return (
     <div className="shortener-container">
       <form onSubmit={handleSubmit}>
@@ -41,7 +54,19 @@ const UrlShortener = () => {
       {error && <p className="error-message">{error}</p>}
       {shortUrl && (
         <div className="result-container">
-          <p>Short URL: <a href={shortUrl} target="_blank" rel="noopener noreferrer">{shortUrl}</a></p>
+          <p>
+            Short URL: <a href={shortUrl} target="_blank" rel="noopener noreferrer">
+              {shortUrl}
+            </a>
+            <button 
+              onClick={copyToClipboard}
+              className="copy-button"
+              type="button"
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </p>
+          {copied && <p className="success-message">URL copied to clipboard!</p>}
         </div>
       )}
     </div>
